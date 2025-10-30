@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 // Define schemas if mongoose is available
+let User;
 let Session;
 let Message;
 
@@ -8,6 +9,7 @@ let Message;
 if (mongoose) {
   try {
     // Try to get existing models first to prevent overwriting
+    User = mongoose.models.User;
     Session = mongoose.models.Session;
     Message = mongoose.models.Message;
   } catch {
@@ -28,10 +30,6 @@ if (mongoose) {
       },
       location: {
         country: String,
-        city: String,
-        region: String,
-        latitude: Number,
-        longitude: Number,
       },
       browser: String,
       device: String,
@@ -75,6 +73,48 @@ if (mongoose) {
 
     Message = mongoose.models.Message || mongoose.model('Message', messageSchema);
   }
+  
+  // Define User schema if it doesn't exist
+  if (!User) {
+    const userSchema = new mongoose.Schema({
+      userId: {
+        type: String,
+        required: true,
+        unique: true,
+      },
+      encryptedIp: {
+        type: String,
+        required: true,
+        unique: true,
+      },
+      location: {
+        country: String,
+      },
+      browser: String,
+      device: String,
+      firstSeen: {
+        type: Date,
+        default: Date.now,
+      },
+      lastSeen: {
+        type: Date,
+        default: Date.now,
+      },
+      sessions: [{
+        type: String, // sessionId references
+      }],
+      totalQuestions: {
+        type: Number,
+        default: 0,
+      },
+      totalSessionDuration: {
+        type: Number,
+        default: 0, // in seconds
+      },
+    }, { timestamps: true });
+
+    User = mongoose.models.User || mongoose.model('User', userSchema);
+  }
 }
 
-export { Session, Message };
+export { User, Session, Message };

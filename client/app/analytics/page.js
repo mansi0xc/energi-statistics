@@ -164,18 +164,33 @@ export default function AnalyticsPage() {
               Analytics Dashboard
             </h1>
             
-            <Link href="/">
-              <motion.div
-                className="px-4 py-2 rounded-lg border border-emerald-500/30 bg-black/50 backdrop-blur-sm text-emerald-400 hover:bg-emerald-900/20 transition-all"
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: '0 0 8px rgba(0, 255, 157, 0.5)'
-                }}
-                transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-              >
-                Back to Chat
-              </motion.div>
-            </Link>
+            <div className="flex space-x-4">
+              <Link href="/users">
+                <motion.div
+                  className="px-4 py-2 rounded-lg border border-emerald-500/30 bg-black/50 backdrop-blur-sm text-emerald-400 hover:bg-emerald-900/20 transition-all"
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: '0 0 8px rgba(0, 255, 157, 0.5)'
+                  }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                  View Users
+                </motion.div>
+              </Link>
+              
+              <Link href="/">
+                <motion.div
+                  className="px-4 py-2 rounded-lg border border-emerald-500/30 bg-black/50 backdrop-blur-sm text-emerald-400 hover:bg-emerald-900/20 transition-all"
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: '0 0 8px rgba(0, 255, 157, 0.5)'
+                  }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                  Back to Chat
+                </motion.div>
+              </Link>
+            </div>
           </motion.div>
           
           {loading ? (
@@ -191,6 +206,7 @@ export default function AnalyticsPage() {
                   value={data.overview.uniqueUsers} 
                   icon={<UsersIcon />} 
                   color="emerald"
+                  onClick={() => window.location.href = '/users'}
                 />
                 <MetricCard 
                   title="Total Sessions" 
@@ -205,8 +221,8 @@ export default function AnalyticsPage() {
                   color="purple"
                 />
                 <MetricCard 
-                  title="Session Hours" 
-                  value={data.overview.totalSessionHours} 
+                  title="Session Minutes" 
+                  value={data.overview.totalSessionMinutes} 
                   icon={<HoursIcon />} 
                   color="amber"
                 />

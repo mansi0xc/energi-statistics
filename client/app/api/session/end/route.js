@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongoose';
-import { Session, Message } from '@/lib/models';
+import { User, Session, Message } from '@/lib/models';
 import { calculateDuration } from '@/lib/utils';
 
 export async function POST(request) {
@@ -12,6 +12,15 @@ export async function POST(request) {
         { error: 'Session ID is required' },
         { status: 400 }
       );
+    }
+
+    // Skip processing for local sessions
+    if (sessionId.startsWith('local-')) {
+      return NextResponse.json({
+        message: 'Local session ended (no data saved)',
+        duration: 0,
+        questionCount: 0
+      });
     }
 
     // Connect to database
@@ -37,6 +46,7 @@ export async function POST(request) {
     const endTime = new Date();
     const duration = calculateDuration(session.startTime, endTime);
 
+    // Update session with end time and question count
     await Session.updateOne(
       { sessionId },
       {
@@ -45,6 +55,14 @@ export async function POST(request) {
         questionCount: messageCount
       }
     );
+
+    // Update user's statistics
+    const user = await User.findOne({ encryptedIp: session.encryptedIp });
+    if (user) {
+      user.totalQuestions += messageCount;
+      user.totalSessionDuration += duration;
+      await user.save();
+    }
 
     return NextResponse.json({
       message: 'Session ended successfully',

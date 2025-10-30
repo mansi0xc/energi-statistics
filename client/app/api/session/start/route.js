@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongoose';
-import { Session } from '@/lib/models';
-import { generateSessionId, encryptIp, parseUserAgent } from '@/lib/utils';
+import { User, Session } from '@/lib/models';
+import { generateSessionId, encryptIp, parseUserAgent, generateUserId } from '@/lib/utils';
 
 export async function POST(request) {
   try {
@@ -25,7 +25,33 @@ export async function POST(request) {
     
     // Get location info (in a real implementation, you would use an IP geolocation API)
     // For now, we'll mock this data
-    const location = await mockLocationLookup(ip);
+    const location = { country: await getCountry(ip) };
+    
+    // Find or create user based on encrypted IP
+    let user = await User.findOne({ encryptedIp });
+    
+    if (!user) {
+      // Create new user if not found
+      user = await User.create({
+        userId: generateUserId(),
+        encryptedIp,
+        location,
+        browser,
+        device,
+        firstSeen: new Date(),
+        lastSeen: new Date(),
+        sessions: [sessionId],
+        totalQuestions: 0,
+        totalSessionDuration: 0
+      });
+    } else {
+      // Update existing user
+      user.lastSeen = new Date();
+      user.browser = browser; // Update with latest browser
+      user.device = device;   // Update with latest device
+      user.sessions.push(sessionId);
+      await user.save();
+    }
     
     // Create a new session
     const session = await Session.create({
@@ -45,27 +71,17 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error starting session:', error);
     return NextResponse.json(
-      { error: 'Failed to start session' },
+      { error: 'Failed to start session', sessionId: `local-${Date.now()}` },
       { status: 500 }
     );
   }
 }
 
-// Mock function to simulate IP geolocation lookup
+// Get country from IP address
 // In production, replace with actual API call to a service like ipinfo.io
-async function mockLocationLookup(ip) {
-  // For privacy in the mock data, we don't use the actual IP
-  const locations = [
-    { country: 'United States', city: 'New York', region: 'NY', latitude: 40.7128, longitude: -74.0060 },
-    { country: 'United Kingdom', city: 'London', region: 'England', latitude: 51.5074, longitude: -0.1278 },
-    { country: 'Japan', city: 'Tokyo', region: 'Kanto', latitude: 35.6762, longitude: 139.6503 },
-    { country: 'Australia', city: 'Sydney', region: 'NSW', latitude: -33.8688, longitude: 151.2093 },
-    { country: 'Germany', city: 'Berlin', region: 'Berlin', latitude: 52.5200, longitude: 13.4050 },
-  ];
-  
-  // Choose a random location for the mock data
-  const randomIndex = Math.floor(Math.random() * locations.length);
-  return locations[randomIndex];
+async function getCountry(ip) {
+  // For now, use the user's actual country (India) for testing
+  return 'India';
 }
 
 // In a real implementation, you would have a function like this:

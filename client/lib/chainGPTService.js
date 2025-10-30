@@ -3,7 +3,7 @@ import axios from 'axios';
 class ChainGPTService {
   constructor() {
     this.apiKey = process.env.CHAINGPT_API_KEY;
-    this.baseURL = 'https://api.chaingpt.org';
+    this.baseURL = process.env.CHAINGPT_API_URL || 'https://api.chaingpt.org';
 
     if (!this.apiKey) {
       console.warn(
@@ -11,13 +11,20 @@ class ChainGPTService {
       );
     }
 
+    // Create headers with or without API key
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Only add Authorization header if API key is available
+    if (this.apiKey) {
+      headers.Authorization = `Bearer ${this.apiKey}`;
+    }
+
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
       timeout: 60000, // Increased to 60 seconds
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
     });
 
     this.conversationHistory = new Map();
@@ -191,7 +198,12 @@ class ChainGPTService {
   }
 
   generateConversationId() {
-    return `conv_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    // Generate a proper UUID v4 as required by ChainGPT API
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 
   async testConnection() {

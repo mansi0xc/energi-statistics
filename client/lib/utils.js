@@ -21,6 +21,14 @@ export function generateSessionId() {
 }
 
 /**
+ * Generates a unique user ID
+ * @returns {string} - A unique user ID
+ */
+export function generateUserId() {
+  return crypto.randomUUID();
+}
+
+/**
  * Calculates the duration between two dates in seconds
  * @param {Date} startTime - The start time
  * @param {Date} endTime - The end time
