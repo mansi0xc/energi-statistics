@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
+  --primary: 0, 255, 157; /* Neon green */
+  --primary-dark: 0, 200, 120;
+  --secondary: 0, 225, 225; /* Teal */
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Custom glow effects */
+.glow-border {
+  box-shadow: 0 0 10px rgba(var(--primary), 0.5);
+}
+
+.glow-text {
+  text-shadow: 0 0 8px rgba(var(--primary), 0.7);
+}
+
+/* Chat message styling */
+.message-user {
+  @apply bg-gray-900 text-white rounded-2xl rounded-br-none p-4 max-w-[80%] shadow-lg;
+}
+
+.message-bot {
+  @apply bg-emerald-900/60 text-white rounded-2xl rounded-bl-none p-4 max-w-[80%] shadow-lg border border-emerald-500/30;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--primary), 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--primary), 0.5);
+}
