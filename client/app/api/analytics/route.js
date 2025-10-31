@@ -13,10 +13,25 @@ export async function GET() {
     // Count unique users
     const uniqueUserCount = await User.countDocuments();
     
-    // Calculate total session minutes from user records (more accurate)
-    const users = await User.find();
-    const totalSessionSeconds = users.reduce((acc, user) => acc + (user.totalSessionDuration || 0), 0);
+    // Calculate total session minutes directly from sessions with questions and duration
+    const sessionsWithQuestions = await Session.find({ 
+      questionCount: { $gt: 0 }
+    });
+    
+    // Debug each session to see what's happening
+    console.log(`Sessions data debug:`);
+    sessionsWithQuestions.forEach((session, index) => {
+      console.log(`Session ${index + 1}: ID: ${session.sessionId}, Questions: ${session.questionCount}, Duration: ${session.duration || 'undefined'}, Start: ${session.startTime}, End: ${session.endTime || 'not ended'}`);
+    });
+    
+    // Only count sessions that have a duration value
+    const completedSessions = sessionsWithQuestions.filter(s => s.duration && s.duration > 0);
+    
+    // Calculate total seconds and convert to minutes
+    const totalSessionSeconds = completedSessions.reduce((acc, session) => acc + (session.duration || 0), 0);
     const totalSessionMinutes = Math.round(totalSessionSeconds / 60); // Convert to minutes
+    
+    console.log(`Analytics: Found ${completedSessions.length} completed sessions with duration totaling ${totalSessionSeconds} seconds (${totalSessionMinutes} minutes)`);
     
     // Count total questions (only user messages)
     const totalQuestions = await Message.countDocuments({ role: 'user' });
@@ -42,13 +57,21 @@ export async function GET() {
     ]);
     
     // Get session duration distribution - only include sessions with at least one question
-    const durationDistribution = [
-      { range: '< 1 min', count: await Session.countDocuments({ duration: { $lt: 60 }, questionCount: { $gt: 0 } }) },
-      { range: '1-5 mins', count: await Session.countDocuments({ duration: { $gte: 60, $lt: 300 }, questionCount: { $gt: 0 } }) },
-      { range: '5-15 mins', count: await Session.countDocuments({ duration: { $gte: 300, $lt: 900 }, questionCount: { $gt: 0 } }) },
-      { range: '15-30 mins', count: await Session.countDocuments({ duration: { $gte: 900, $lt: 1800 }, questionCount: { $gt: 0 } }) },
-      { range: '> 30 mins', count: await Session.countDocuments({ duration: { $gte: 1800 }, questionCount: { $gt: 0 } }) }
-    ];
+    const durationDistribution = await Promise.all([
+      Session.countDocuments({ duration: { $exists: true, $gt: 0, $lt: 60 }, questionCount: { $gt: 0 } })
+        .then(count => ({ range: '< 1 min', count })),
+      Session.countDocuments({ duration: { $gte: 60, $lt: 300 }, questionCount: { $gt: 0 } })
+        .then(count => ({ range: '1-5 mins', count })),
+      Session.countDocuments({ duration: { $gte: 300, $lt: 900 }, questionCount: { $gt: 0 } })
+        .then(count => ({ range: '5-15 mins', count })),
+      Session.countDocuments({ duration: { $gte: 900, $lt: 1800 }, questionCount: { $gt: 0 } })
+        .then(count => ({ range: '15-30 mins', count })),
+      Session.countDocuments({ duration: { $gte: 1800 }, questionCount: { $gt: 0 } })
+        .then(count => ({ range: '> 30 mins', count }))
+    ]);
+    
+    // Log duration distribution for debugging
+    console.log("Duration distribution:", durationDistribution);
     
     // Get question count distribution - only include sessions with at least 1 question
     const questionDistribution = [
@@ -107,7 +130,7 @@ function getMockAnalyticsData() {
     overview: {
       totalSessions: 3,
       uniqueUsers: 1,
-      totalSessionMinutes: 10,
+      totalSessionMinutes: 15,
       totalQuestions: 7,
       averageQuestionsPerSession: 2.3
     },
@@ -122,8 +145,8 @@ function getMockAnalyticsData() {
     ],
     durationDistribution: [
       { range: '< 1 min', count: 1 },
-      { range: '1-5 mins', count: 2 },
-      { range: '5-15 mins', count: 0 },
+      { range: '1-5 mins', count: 1 },
+      { range: '5-15 mins', count: 1 },
       { range: '15-30 mins', count: 0 },
       { range: '> 30 mins', count: 0 }
     ],

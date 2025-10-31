@@ -27,13 +27,27 @@ const ChatContainer = () => {
     };
     setMessages([initialMessage]);
 
+    // Set up event listener to end session when navigating away
+    const handleBeforeUnload = () => {
+      if (sessionId) {
+        // Use a synchronous approach for beforeunload
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/session/end', false); // false makes it synchronous
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({ sessionId }));
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     // End session when component unmounts
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       if (sessionId) {
         endSession();
       }
     };
-  }, []);
+  }, [sessionId]); // Add sessionId as dependency
 
   const startSession = async () => {
     try {
@@ -166,6 +180,23 @@ const ChatContainer = () => {
     >
       {/* Chat messages */}
       <div className="flex-1 p-4 overflow-y-auto">
+        {sessionId && (
+          <div className="text-xs text-gray-400 mb-2 flex justify-between">
+            <span>Session: {sessionId.substring(0, 8)}...</span>
+            {/* <button 
+              onClick={() => {
+                if (sessionId) {
+                  endSession();
+                  // Redirect to analytics page after ending session
+                  window.location.href = '/analytics';
+                }
+              }}
+              className="text-emerald-400 hover:text-emerald-300"
+            >
+              End Session & View Stats
+            </button> */}
+          </div>
+        )}
         <div className="flex flex-col space-y-4">
           {messages.map((message, index) => (
             <MessageBubble 

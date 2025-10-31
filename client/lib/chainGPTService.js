@@ -21,6 +21,7 @@ class ChainGPTService {
       headers.Authorization = `Bearer ${this.apiKey}`;
     }
 
+    // Create axios instance without custom adapter
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
       timeout: 60000, // Increased to 60 seconds

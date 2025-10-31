@@ -45,7 +45,8 @@ export default function UserDetailPage({ params }) {
   // Format duration in seconds to minutes
   const formatDuration = (seconds) => {
     if (!seconds) return '0m';
-    return `${Math.round(seconds / 60)}m`;
+    // Convert to minutes with 1 decimal place for more accuracy
+    return `${(seconds / 60).toFixed(1)}m`;
   };
 
   return (

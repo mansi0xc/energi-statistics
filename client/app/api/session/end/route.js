@@ -44,7 +44,18 @@ export async function POST(request) {
 
     // Update session with end time and question count
     const endTime = new Date();
-    const duration = calculateDuration(session.startTime, endTime);
+    // Calculate duration in seconds using Unix timestamps
+    const startTimeMs = session.startTime.getTime();
+    const endTimeMs = endTime.getTime();
+    const durationInSeconds = Math.floor((endTimeMs - startTimeMs) / 1000);
+    
+    // Ensure we have a positive duration (in case of clock issues)
+    const duration = Math.max(1, durationInSeconds); // Minimum 1 second duration
+    
+    console.log(`Session ${sessionId} duration: ${duration} seconds (${Math.floor(duration/60)} minutes)`);
+    
+    // Debug info to help track session data
+    console.log(`Session details: Start time: ${session.startTime.toISOString()}, End time: ${endTime.toISOString()}, Question count: ${messageCount}`);
 
     // Update session with end time and question count
     await Session.updateOne(

@@ -42,31 +42,49 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        // Try to fetch real data, but don't worry if it fails
-        try {
-          const response = await fetch('/api/analytics');
-          if (response.ok) {
-            const data = await response.json();
-            setAnalyticsData(data);
-          }
-        } catch (err) {
-          console.error('Using mock data instead:', err);
-        }
-        
-        // Always set loading to false after a short delay to show the mock data
-        setTimeout(() => {
-          setLoading(false);
-        }, 500);
-      } catch (err) {
-        console.error('Error in analytics:', err);
-        setLoading(false);
-      }
-    };
+  // Function to end any open sessions
+  const endOpenSessions = async () => {
+    try {
+      const response = await fetch('/api/end-last-session');
+      const data = await response.json();
+      console.log('End session response:', data);
+      return data;
+    } catch (err) {
+      console.error('Error ending open sessions:', err);
+      return null;
+    }
+  };
 
-    fetchAnalytics();
+  // Function to fetch analytics data
+  const fetchAnalytics = async () => {
+    try {
+      // Try to fetch real data, but don't worry if it fails
+      try {
+        const response = await fetch('/api/analytics');
+        if (response.ok) {
+          const data = await response.json();
+          setAnalyticsData(data);
+        }
+      } catch (err) {
+        console.error('Using mock data instead:', err);
+      }
+      
+      // Always set loading to false after a short delay to show the mock data
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
+    } catch (err) {
+      console.error('Error in analytics:', err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Attempt to end any open sessions when the analytics page loads
+    endOpenSessions().then(() => {
+      // Then fetch analytics data
+      fetchAnalytics();
+    });
   }, []);
 
   // Mock data for development/preview

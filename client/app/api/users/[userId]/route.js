@@ -53,6 +53,11 @@ export async function GET(request, { params }) {
       })
     );
 
+    // Calculate total duration directly from sessions for accuracy
+    const totalDurationFromSessions = sessionsWithMessages.reduce((total, session) => {
+      return total + (session.duration || 0);
+    }, 0);
+    
     // Format the response
     const userDetails = {
       userId: user.userId,
@@ -64,7 +69,8 @@ export async function GET(request, { params }) {
       lastSeen: user.lastSeen,
       totalSessions: user.sessions.length,
       totalQuestions: user.totalQuestions,
-      totalSessionDuration: user.totalSessionDuration,
+      // Use the calculated duration from sessions instead of the user model field
+      totalSessionDuration: totalDurationFromSessions,
       sessions: sessionsWithMessages
     };
 
