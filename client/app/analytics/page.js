@@ -238,7 +238,7 @@ export default function AnalyticsPage() {
                   />
                 </ChartCard>
                 
-                <ChartCard title="Question Distribution">
+                <ChartCard title="Question Distribution (Sessions by Question Count)">
                   <BarChartComponent 
                     data={data.questionDistribution} 
                     dataKey="count" 
@@ -266,7 +266,7 @@ export default function AnalyticsPage() {
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-                <ChartCard title="Session Duration">
+                <ChartCard title="Session Duration Distribution">
                   <BarChartComponent 
                     data={data.durationDistribution} 
                     dataKey="count" 

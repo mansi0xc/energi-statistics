@@ -26,9 +26,6 @@ const ChatContainer = () => {
       content: '👋 Hey there! I\'m your ChainGPT assistant. Ask me anything!'
     };
     setMessages([initialMessage]);
-    
-    // Start a new session
-    startSession();
 
     // End session when component unmounts
     return () => {
@@ -106,6 +103,11 @@ const ChatContainer = () => {
     
     // Show typing indicator
     setIsTyping(true);
+    
+    // Start a session if this is the first user message
+    if (!sessionId) {
+      await startSession();
+    }
     
     try {
       // Try to send message to API

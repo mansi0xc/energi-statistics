@@ -102,44 +102,51 @@ export default function UsersPage() {
               <p className="text-gray-400 mt-2">Please try refreshing the page.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-emerald-500/30">
-                    <th className="px-4 py-3 text-left text-emerald-400">User ID</th>
-                    <th className="px-4 py-3 text-left text-emerald-400">IP (Encrypted)</th>
-                    <th className="px-4 py-3 text-left text-emerald-400">Location</th>
-                    <th className="px-4 py-3 text-left text-emerald-400">Browser</th>
-                    <th className="px-4 py-3 text-left text-emerald-400">Device</th>
-                    <th className="px-4 py-3 text-left text-emerald-400">Sessions</th>
-                    <th className="px-4 py-3 text-left text-emerald-400">Questions</th>
-                    <th className="px-4 py-3 text-left text-emerald-400">Duration</th>
-                    <th className="px-4 py-3 text-left text-emerald-400">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.userId} className="border-b border-gray-800 hover:bg-black/40">
-                      <td className="px-4 py-3 font-mono text-xs truncate max-w-[100px]">{user.userId}</td>
-                      <td className="px-4 py-3 font-mono text-xs truncate max-w-[100px]">{user.encryptedIp}</td>
-                      <td className="px-4 py-3">{user.location?.country || 'Unknown'}</td>
-                      <td className="px-4 py-3">{user.browser || 'Unknown'}</td>
-                      <td className="px-4 py-3">{user.device || 'Unknown'}</td>
-                      <td className="px-4 py-3">{user.totalSessions || 0}</td>
-                      <td className="px-4 py-3">{user.totalQuestions || 0}</td>
-                      <td className="px-4 py-3">{formatDuration(user.totalSessionDuration)}</td>
-                      <td className="px-4 py-3">
-                        <Link href={`/users/${user.userId}`}>
-                          <span className="text-emerald-400 hover:text-emerald-300 cursor-pointer">
-                            View Details
-                          </span>
-                        </Link>
-                      </td>
+            <motion.div 
+              className="w-full max-w-5xl mx-auto bg-black/40 backdrop-blur-sm rounded-xl border border-emerald-500/20 overflow-hidden glow-border"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="overflow-x-auto p-6">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-emerald-500/30">
+                      <th className="px-4 py-3 text-left text-emerald-400">User ID</th>
+                      <th className="px-4 py-3 text-left text-emerald-400">IP (Encrypted)</th>
+                      <th className="px-4 py-3 text-left text-emerald-400">Location</th>
+                      <th className="px-4 py-3 text-left text-emerald-400">Browser</th>
+                      <th className="px-4 py-3 text-left text-emerald-400">Device</th>
+                      <th className="px-4 py-3 text-left text-emerald-400">Sessions</th>
+                      <th className="px-4 py-3 text-left text-emerald-400">Questions</th>
+                      <th className="px-4 py-3 text-left text-emerald-400">Duration</th>
+                      <th className="px-4 py-3 text-left text-emerald-400">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.userId} className="border-b border-gray-800 hover:bg-black/60">
+                        <td className="px-4 py-3 font-mono text-xs truncate max-w-[100px]">{user.userId}</td>
+                        <td className="px-4 py-3 font-mono text-xs truncate max-w-[100px]">{user.encryptedIp}</td>
+                        <td className="px-4 py-3">{user.location?.country || 'Unknown'}</td>
+                        <td className="px-4 py-3">{user.browser || 'Unknown'}</td>
+                        <td className="px-4 py-3">{user.device || 'Unknown'}</td>
+                        <td className="px-4 py-3">{user.totalSessions || 0}</td>
+                        <td className="px-4 py-3">{user.totalQuestions || 0}</td>
+                        <td className="px-4 py-3">{formatDuration(user.totalSessionDuration)}</td>
+                        <td className="px-4 py-3">
+                          <Link href={`/users/${user.userId}`}>
+                            <span className="text-emerald-400 hover:text-emerald-300 cursor-pointer">
+                              View Details
+                            </span>
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
           )}
         </main>
         

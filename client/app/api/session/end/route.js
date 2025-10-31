@@ -56,12 +56,28 @@ export async function POST(request) {
       }
     );
 
-    // Update user's statistics
-    const user = await User.findOne({ encryptedIp: session.encryptedIp });
-    if (user) {
-      user.totalQuestions += messageCount;
-      user.totalSessionDuration += duration;
-      await user.save();
+    // Only count session with at least one message
+    if (messageCount > 0) {
+      // Update user's statistics
+      const user = await User.findOne({ encryptedIp: session.encryptedIp });
+      if (user) {
+        // Use atomic update to avoid race conditions
+        await User.updateOne(
+          { encryptedIp: session.encryptedIp },
+          {
+            $set: { lastSeen: new Date() },
+            $inc: { totalSessionDuration: duration }
+          }
+        );
+      }
+    } else {
+      // If no messages, delete the session to avoid empty sessions
+      await Session.deleteOne({ sessionId });
+      return NextResponse.json({
+        message: 'Empty session deleted',
+        duration: 0,
+        questionCount: 0
+      });
     }
 
     return NextResponse.json({

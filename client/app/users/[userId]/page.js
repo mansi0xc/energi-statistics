@@ -204,14 +204,18 @@ export default function UserDetailPage({ params }) {
                           {session.conversation && session.conversation.map((msg, index) => (
                             <div 
                               key={index} 
-                              className={`p-3 rounded-lg ${
-                                msg.role === 'user' 
-                                  ? 'bg-gray-900 text-white ml-auto max-w-[80%]' 
-                                  : 'bg-emerald-900/60 border border-emerald-500/30 text-white mr-auto max-w-[80%]'
-                              }`}
+                              className="flex flex-col"
                             >
-                              <p>{msg.content}</p>
-                              <p className="text-xs text-gray-400 mt-1">{formatDate(msg.timestamp)}</p>
+                              <div 
+                                className={`p-3 rounded-lg ${
+                                  msg.role === 'user' 
+                                    ? 'bg-gray-900 text-white self-end inline-block max-w-[80%] min-w-[120px]' 
+                                    : 'bg-emerald-900/60 border border-emerald-500/30 text-white self-start inline-block max-w-[80%] min-w-[120px]'
+                                }`}
+                              >
+                                <p>{msg.content}</p>
+                                <p className="text-xs text-gray-400 mt-1">{formatDate(msg.timestamp)}</p>
+                              </div>
                             </div>
                           ))}
                         </div>

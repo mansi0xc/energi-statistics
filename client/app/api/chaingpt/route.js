@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongoose';
-import { Message } from '@/lib/models';
+import { User, Session, Message } from '@/lib/models';
 import { chainGPTService } from '@/lib/chainGPTService';
 
 export async function POST(request) {
@@ -23,6 +23,22 @@ export async function POST(request) {
       role: 'user',
       content: message,
     });
+    
+    // Find the session to get the user's encrypted IP
+    const session = await Session.findOne({ sessionId });
+    if (session) {
+      // Update the session's question count
+      await Session.updateOne(
+        { sessionId },
+        { $inc: { questionCount: 1 } }
+      );
+      
+      // Find and update the user's question count
+      await User.updateOne(
+        { encryptedIp: session.encryptedIp },
+        { $inc: { totalQuestions: 1 } }
+      );
+    }
 
     // Send message to ChainGPT API
     let response;
