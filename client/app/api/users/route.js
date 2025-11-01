@@ -10,19 +10,31 @@ export async function GET() {
     // Get all users with their details
     const users = await User.find().sort({ lastSeen: -1 });
 
-    // Format the response
-    const formattedUsers = users.map(user => ({
-      userId: user.userId,
-      encryptedIp: user.encryptedIp,
-      location: user.location,
-      browser: user.browser,
-      device: user.device,
-      firstSeen: user.firstSeen,
-      lastSeen: user.lastSeen,
-      totalSessions: user.sessions.length,
-      totalQuestions: user.totalQuestions,
-      totalSessionDuration: user.totalSessionDuration,
-      sessionIds: user.sessions
+    // Format the response with calculated durations
+    const formattedUsers = await Promise.all(users.map(async (user) => {
+      // Calculate total duration from actual sessions
+      const userSessions = await Session.find({ 
+        sessionId: { $in: user.sessions } 
+      });
+      
+      const totalDurationFromSessions = userSessions.reduce((total, session) => {
+        return total + (session.duration || 0);
+      }, 0);
+      
+      return {
+        userId: user.userId,
+        encryptedIp: user.encryptedIp,
+        location: user.location,
+        browser: user.browser,
+        device: user.device,
+        firstSeen: user.firstSeen,
+        lastSeen: user.lastSeen,
+        totalSessions: user.sessions.length,
+        totalQuestions: user.totalQuestions,
+        // Use calculated duration instead of stored value
+        totalSessionDuration: totalDurationFromSessions,
+        sessionIds: user.sessions
+      };
     }));
 
     return NextResponse.json(formattedUsers);

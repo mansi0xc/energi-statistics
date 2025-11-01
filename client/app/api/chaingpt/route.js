@@ -7,29 +7,34 @@ export async function POST(request) {
   try {
     const { message, sessionId } = await request.json();
 
-    if (!message || !sessionId) {
+    if (!message) {
       return NextResponse.json(
-        { error: 'Message and sessionId are required' },
+        { error: 'Message is required' },
         { status: 400 }
       );
     }
+    
+    // Handle missing or invalid sessionId
+    const validSessionId = sessionId && !sessionId.startsWith('temp-') 
+      ? sessionId 
+      : `temp-${Date.now()}`;
 
     // Connect to the database
     await dbConnect();
 
     // Store user message
     await Message.create({
-      sessionId,
+      sessionId: validSessionId,
       role: 'user',
       content: message,
     });
     
     // Find the session to get the user's encrypted IP
-    const session = await Session.findOne({ sessionId });
+    const session = await Session.findOne({ sessionId: validSessionId });
     if (session) {
       // Update the session's question count
       await Session.updateOne(
-        { sessionId },
+        { sessionId: validSessionId },
         { $inc: { questionCount: 1 } }
       );
       
@@ -38,6 +43,9 @@ export async function POST(request) {
         { encryptedIp: session.encryptedIp },
         { $inc: { totalQuestions: 1 } }
       );
+    } else if (!validSessionId.startsWith('temp-')) {
+      // Log warning for missing session that should exist
+      console.warn(`Session not found: ${validSessionId}`);
     }
 
     // Send message to ChainGPT API
@@ -82,7 +90,7 @@ export async function POST(request) {
 
     // Store assistant message
     await Message.create({
-      sessionId,
+      sessionId: validSessionId,
       role: 'assistant',
       content: response.message,
     });

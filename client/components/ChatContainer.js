@@ -58,13 +58,19 @@ const ChatContainer = () => {
         });
         const data = await res.json();
         setSessionId(data.sessionId);
+        return data.sessionId; // Return the session ID
       } catch (error) {
         // If API fails, create a local mock session ID
         console.error('Failed to start session with API, using local session:', error);
-        setSessionId(`local-${Date.now()}`);
+        const localId = `local-${Date.now()}`;
+        setSessionId(localId);
+        return localId; // Return the local session ID
       }
     } catch (error) {
       console.error('Failed to start session:', error);
+      const localId = `local-${Date.now()}`;
+      setSessionId(localId);
+      return localId;
     }
   };
 
@@ -111,6 +117,13 @@ const ChatContainer = () => {
   };
 
   const handleSendMessage = async (content) => {
+    // Start a session if this is the first user message (before adding to chat)
+    let currentSessionId = sessionId;
+    if (!currentSessionId) {
+      // Wait for the session to be created and get the ID directly
+      currentSessionId = await startSession();
+    }
+    
     // Add user message to chat
     const userMessage = { role: 'user', content };
     setMessages(prev => [...prev, userMessage]);
@@ -118,16 +131,14 @@ const ChatContainer = () => {
     // Show typing indicator
     setIsTyping(true);
     
-    // Start a session if this is the first user message
-    if (!sessionId) {
-      await startSession();
-    }
-    
     try {
       // Try to send message to API
       let botResponse;
       
       try {
+        // Make sure we have a valid sessionId before making the API call
+        const effectiveSessionId = currentSessionId || `temp-${Date.now()}`;
+        
         const response = await fetch('/api/chaingpt', {
           method: 'POST',
           headers: {
@@ -135,9 +146,13 @@ const ChatContainer = () => {
           },
           body: JSON.stringify({ 
             message: content,
-            sessionId 
+            sessionId: effectiveSessionId
           }),
         });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
         
         const data = await response.json();
         botResponse = data.message;
