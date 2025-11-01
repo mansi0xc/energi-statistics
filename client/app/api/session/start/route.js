@@ -16,9 +16,18 @@ export async function POST(request) {
     // Encrypt the IP address for privacy
     const encryptedIp = encryptIp(ip);
     
+    // Get browser info from client (for Brave detection)
+    const body = await request.json().catch(() => ({}));
+    const isBrave = body.isBrave || false;
+    
     // Get user agent
     const userAgent = request.headers.get('user-agent') || '';
-    const { browser, device } = parseUserAgent(userAgent);
+    let { browser, device } = parseUserAgent(userAgent);
+    
+    // Override browser if Brave is detected on client side
+    if (isBrave) {
+      browser = 'Brave';
+    }
     
     // Generate a unique session ID
     const sessionId = generateSessionId();

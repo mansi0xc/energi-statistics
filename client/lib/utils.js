@@ -48,8 +48,10 @@ export function parseUserAgent(userAgent) {
   if (!userAgent) return { browser: 'Unknown', device: 'Unknown' };
   
   // Simple browser detection
+  // IMPORTANT: Check for more specific browsers before generic ones
+  // Brave, Edge, and others are based on Chrome, so check them first
   let browser = 'Unknown';
-  if (userAgent.includes('Firefox')) {
+  if (userAgent.includes('Firefox') && !userAgent.includes('Seamonkey')) {
     browser = 'Firefox';
   } else if (userAgent.includes('SamsungBrowser')) {
     browser = 'Samsung Browser';
@@ -57,9 +59,14 @@ export function parseUserAgent(userAgent) {
     browser = 'Opera';
   } else if (userAgent.includes('Edg')) {
     browser = 'Edge';
-  } else if (userAgent.includes('Chrome')) {
+  } else if (userAgent.includes('Brave')) {
+    browser = 'Brave';
+  } else if (userAgent.includes('Chrome') && userAgent.includes('Safari')) {
+    // Brave doesn't explicitly say "Brave" in user agent, but we can detect it
+    // by checking for specific patterns or using navigator.brave
+    // For now, if it's Chromium-based but not Opera/Edge, check if it could be Brave
     browser = 'Chrome';
-  } else if (userAgent.includes('Safari')) {
+  } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
     browser = 'Safari';
   }
   

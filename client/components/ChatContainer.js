@@ -19,14 +19,17 @@ const ChatContainer = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  // Initialize chat with greeting message
+  // Initialize chat with greeting message (only once)
   useEffect(() => {
     const initialMessage = {
       role: 'assistant',
       content: '👋 Hey there! I\'m your ChainGPT assistant. Ask me anything!'
     };
     setMessages([initialMessage]);
+  }, []); // Run only once on mount
 
+  // Set up event listeners for session end
+  useEffect(() => {
     // Set up event listener to end session when navigating away
     const handleBeforeUnload = () => {
       if (sessionId) {
@@ -47,14 +50,24 @@ const ChatContainer = () => {
         endSession();
       }
     };
-  }, [sessionId]); // Add sessionId as dependency
+  }, [sessionId]); // Re-run when sessionId changes to update the event listener
 
   const startSession = async () => {
     try {
+      // Detect browser on client side
+      // Brave has a special API to detect it
+      const isBrave = navigator.brave && await navigator.brave.isBrave() || false;
+      
       // Try to start a session with the API
       try {
         const res = await fetch('/api/session/start', {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            isBrave: isBrave 
+          }),
         });
         const data = await res.json();
         setSessionId(data.sessionId);
