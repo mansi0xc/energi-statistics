@@ -114,7 +114,6 @@ export default function UsersPage() {
                   <thead>
                     <tr className="border-b border-emerald-500/30">
                       <th className="px-4 py-3 text-left text-emerald-400">User ID</th>
-                      <th className="px-4 py-3 text-left text-emerald-400">IP (Encrypted)</th>
                       <th className="px-4 py-3 text-left text-emerald-400">Location</th>
                       <th className="px-4 py-3 text-left text-emerald-400">Browser</th>
                       <th className="px-4 py-3 text-left text-emerald-400">Device</th>
@@ -128,7 +127,6 @@ export default function UsersPage() {
                     {users.map((user) => (
                       <tr key={user.userId} className="border-b border-gray-800 hover:bg-black/60">
                         <td className="px-4 py-3 font-mono text-xs truncate max-w-[100px]">{user.userId}</td>
-                        <td className="px-4 py-3 font-mono text-xs truncate max-w-[100px]">{user.encryptedIp}</td>
                         <td className="px-4 py-3">{user.location?.country || 'Unknown'}</td>
                         <td className="px-4 py-3">{user.browser || 'Unknown'}</td>
                         <td className="px-4 py-3">{user.device || 'Unknown'}</td>
