@@ -17,6 +17,8 @@ const LineChartComponent = ({ data, dataKey = 'count', xAxisKey = 'date', lineCo
           dataKey={xAxisKey} 
           tick={{ fill: '#aaa' }} 
           axisLine={{ stroke: '#555' }}
+          type="category"
+          allowDuplicatedCategory={false}
         />
         <YAxis 
           tick={{ fill: '#aaa' }} 
@@ -37,6 +39,8 @@ const LineChartComponent = ({ data, dataKey = 'count', xAxisKey = 'date', lineCo
           strokeWidth={2}
           dot={{ fill: lineColor, stroke: lineColor, strokeWidth: 2, r: 4 }}
           activeDot={{ fill: lineColor, stroke: '#fff', strokeWidth: 2, r: 6 }}
+          isAnimationActive={false}
+          connectNulls
         />
       </LineChart>
     </ResponsiveContainer>

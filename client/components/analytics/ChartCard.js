@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-const ChartCard = ({ title, children, className = '' }) => {
+const ChartCard = ({ title, children, className = '', actions = null }) => {
   return (
     <motion.div
       className={`bg-black/40 backdrop-blur-sm border border-emerald-500/30 rounded-xl p-6 ${className}`}
@@ -11,7 +11,14 @@ const ChartCard = ({ title, children, className = '' }) => {
         boxShadow: `0 0 20px rgba(var(--primary), 0.2)` 
       }}
     >
-      <h3 className="text-gray-300 text-lg font-medium mb-4">{title}</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-gray-300 text-lg font-medium">{title}</h3>
+        {actions && (
+          <div className="ml-4">
+            {actions}
+          </div>
+        )}
+      </div>
       <div className="w-full h-full">
         {children}
       </div>

@@ -2,10 +2,29 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongoose';
 import { User, Session, Message } from '@/lib/models';
 
-export async function GET() {
+export async function GET(request) {
   try {
     // Connect to database
     await dbConnect();
+
+    // Time range selection for session trend
+    const { searchParams } = new URL(request.url);
+    const range = (searchParams.get('range') || 'week').toLowerCase();
+    const now = new Date();
+    let startDate = null;
+    if (range === 'week') {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 6);
+      startDate.setHours(0,0,0,0);
+    } else if (range === 'month') {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 29);
+      startDate.setHours(0,0,0,0);
+    } else if (range === 'year') {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 364);
+      startDate.setHours(0,0,0,0);
+    }
 
     // Get overall metrics - only count sessions with at least one question
     const totalSessions = await Session.countDocuments({ questionCount: { $gt: 0 } });
@@ -80,25 +99,33 @@ export async function GET() {
       { range: '> 10 questions', count: await Session.countDocuments({ questionCount: { $gt: 10 } }) }
     ];
     
-    // Get session trend (last 7 days)
-    const last7Days = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
-      
-      const nextDay = new Date(date);
-      nextDay.setDate(nextDay.getDate() + 1);
-      
-      const count = await Session.countDocuments({
-        startTime: { $gte: date, $lt: nextDay },
-        questionCount: { $gt: 0 }
-      });
-      
-      last7Days.push({
-        date: date.toISOString().split('T')[0],
-        count
-      });
+    // Build session trend for selected range
+    let sessionTrend = [];
+    if (range === 'all') {
+      const trend = await Session.aggregate([
+        { $match: { questionCount: { $gt: 0 } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$startTime' } }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } }
+      ]);
+      sessionTrend = trend.map(t => ({ date: t._id, count: t.count }));
+    } else {
+      const days = [];
+      const iter = new Date(startDate);
+      iter.setHours(0,0,0,0);
+      const endDate = new Date(now);
+      endDate.setHours(0,0,0,0);
+      while (iter <= endDate) {
+        days.push(iter.toISOString().split('T')[0]);
+        const next = new Date(iter);
+        next.setDate(iter.getDate() + 1);
+        iter.setTime(next.getTime());
+      }
+      const trend = await Session.aggregate([
+        { $match: { questionCount: { $gt: 0 }, startTime: { $gte: startDate, $lte: now } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$startTime' } }, count: { $sum: 1 } } }
+      ]);
+      const map = new Map(trend.map(t => [t._id, t.count]));
+      sessionTrend = days.map(d => ({ date: d, count: map.get(d) || 0 }));
     }
     
     return NextResponse.json({
@@ -114,7 +141,7 @@ export async function GET() {
       locations,
       durationDistribution,
       questionDistribution,
-      sessionTrend: last7Days
+      sessionTrend
     });
   } catch (error) {
     console.error('Error fetching analytics:', error);

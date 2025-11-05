@@ -41,6 +41,7 @@ export default function AnalyticsPage() {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [range, setRange] = useState('week');
 
   // Function to end any open sessions
   const endOpenSessions = async () => {
@@ -60,7 +61,7 @@ export default function AnalyticsPage() {
     try {
       // Try to fetch real data, but don't worry if it fails
       try {
-        const response = await fetch('/api/analytics');
+        const response = await fetch(`/api/analytics?range=${range}`);
         if (response.ok) {
           const data = await response.json();
           setAnalyticsData(data);
@@ -85,7 +86,7 @@ export default function AnalyticsPage() {
       // Then fetch analytics data
       fetchAnalytics();
     });
-  }, []);
+  }, [range]);
 
   // Mock data for development/preview
   const mockData = {
@@ -141,6 +142,22 @@ export default function AnalyticsPage() {
 
   // Use mock data if no real data is available yet
   const data = analyticsData || mockData;
+
+  // Pretty label for current range
+  const rangeLabel = (() => {
+    switch (range) {
+      case 'week':
+        return 'Last 7 Days';
+      case 'month':
+        return 'Last 30 Days';
+      case 'year':
+        return 'Last 365 Days';
+      case 'all':
+        return 'All Time';
+      default:
+        return 'Last 7 Days';
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-black text-white relative">
@@ -265,8 +282,31 @@ export default function AnalyticsPage() {
               
               {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-                <ChartCard title="Session Trend (Last 7 Days)">
+                <ChartCard 
+                  key={`trend-${range}`}
+                  title={`Session Trend (${rangeLabel})`}
+                  actions={
+                    <div className="bg-black/40 border border-emerald-500/20 rounded-lg p-1 flex space-x-1">
+                      {[
+                        { key: 'week', label: '7d' },
+                        { key: 'month', label: '30d' },
+                        { key: 'year', label: '365d' }
+                        // { key: 'all', label: 'All' }
+                      ].map(opt => (
+                        <button
+                          key={opt.key}
+                          onClick={() => setRange(opt.key)}
+                          className={`px-2 py-0.5 rounded-md text-xs transition-colors ${range === opt.key ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-gray-300 hover:text-emerald-300'}`}
+                          title={`Show ${opt.label}`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  }
+                >
                   <LineChartComponent 
+                    key={range}
                     data={data.sessionTrend} 
                     dataKey="count" 
                     xAxisKey="date"
