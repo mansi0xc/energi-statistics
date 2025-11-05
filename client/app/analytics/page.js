@@ -253,6 +253,7 @@ export default function AnalyticsPage() {
                   value={data.overview.totalQuestions} 
                   icon={<QuestionsIcon />} 
                   color="purple"
+                  onClick={() => window.location.href = '/questions'}
                 />
                 <MetricCard 
                   title="Avg Questions / Session" 
