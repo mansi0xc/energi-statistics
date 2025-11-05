@@ -272,7 +272,7 @@ export default function AnalyticsPage() {
                   />
                 </ChartCard>
                 
-                <ChartCard title="Question Distribution (Sessions by Question Count)">
+                <ChartCard title="Avergae Questions per Session">
                   <BarChartComponent 
                     data={data.questionDistribution} 
                     dataKey="count" 
@@ -310,11 +310,10 @@ export default function AnalyticsPage() {
                 </ChartCard>
                 
                 <ChartCard title="Top Locations">
-                  <BarChartComponent 
+                  <PieChartComponent 
                     data={data.locations} 
                     dataKey="count" 
                     nameKey="_id"
-                    barColor="#9D00FF"
                   />
                 </ChartCard>
               </div>

@@ -3,6 +3,21 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 const COLORS = ['#00FF9D', '#00E5E1', '#00B5FF', '#9D00FF', '#FF00E5'];
 
 const PieChartComponent = ({ data, dataKey = 'count', nameKey = '_id' }) => {
+  const renderTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const p = payload[0].payload || {};
+      const name = p[nameKey] ?? payload[0].name ?? '';
+      const value = p[dataKey] ?? payload[0].value ?? 0;
+      return (
+        <div style={{ backgroundColor: '#111', border: '1px solid #333', color: '#fff', padding: '6px 8px', borderRadius: 8 }}>
+          <div style={{ fontSize: 12 }}>{String(name)}</div>
+          <div style={{ fontWeight: 600 }}>{String(value)}</div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
@@ -21,14 +36,7 @@ const PieChartComponent = ({ data, dataKey = 'count', nameKey = '_id' }) => {
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip 
-          contentStyle={{ 
-            backgroundColor: '#111', 
-            borderColor: '#333',
-            color: '#fff'
-          }}
-          formatter={(value, name) => [`${value}`, name]}
-        />
+        <Tooltip content={renderTooltip} />
         <Legend 
           layout="horizontal" 
           verticalAlign="bottom" 
