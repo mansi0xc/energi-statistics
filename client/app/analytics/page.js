@@ -182,7 +182,7 @@ export default function AnalyticsPage() {
               Analytics Dashboard
             </h1>
             
-            <div className="flex space-x-4">
+            {/* <div className="flex space-x-4">
               <Link href="/users">
                 <motion.div
                   className="px-4 py-2 rounded-lg border border-emerald-500/30 bg-black/50 backdrop-blur-sm text-emerald-400 hover:bg-emerald-900/20 transition-all"
@@ -208,7 +208,7 @@ export default function AnalyticsPage() {
                   Back to Chat
                 </motion.div>
               </Link>
-            </div>
+            </div> */}
           </motion.div>
           
           {loading ? (
@@ -218,7 +218,7 @@ export default function AnalyticsPage() {
           ) : (
             <>
               {/* Overview Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-10">
                 <MetricCard 
                   title="Unique Users" 
                   value={data.overview.uniqueUsers} 
@@ -233,16 +233,32 @@ export default function AnalyticsPage() {
                   color="blue"
                 />
                 <MetricCard 
+                  title="Total Session Minutes" 
+                  value={data.overview.totalSessionMinutes} 
+                  icon={<HoursIcon />} 
+                  color="amber"
+                />
+                <MetricCard 
+                  title="Avg Session Minutes" 
+                  value={
+                    data.overview.totalSessions
+                      ? Math.round((data.overview.totalSessionMinutes / data.overview.totalSessions) * 10) / 10
+                      : 0
+                  } 
+                  icon={<HoursIcon />} 
+                  color="amber"
+                />
+                <MetricCard 
                   title="Total Questions" 
                   value={data.overview.totalQuestions} 
                   icon={<QuestionsIcon />} 
                   color="purple"
                 />
                 <MetricCard 
-                  title="Session Minutes" 
-                  value={data.overview.totalSessionMinutes} 
-                  icon={<HoursIcon />} 
-                  color="amber"
+                  title="Avg Questions / Session" 
+                  value={data.overview.averageQuestionsPerSession} 
+                  icon={<QuestionsIcon />} 
+                  color="purple"
                 />
               </div>
               
